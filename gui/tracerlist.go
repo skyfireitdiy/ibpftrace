@@ -14,7 +14,7 @@ func syncTracerListInfo(g *gocui.Gui) {
 	guiData_.chooserData_.status = guiData_.tracerListData_.status
 
 	guiData_.chooserData_.title = stateTracerList
-	guiData_.chooserData_.data = strings.Join(command.GetChooseList(), "\n")
+	guiData_.chooserData_.data = strings.Join(command.TracerList(), "\n")
 	guiData_.chooserData_.y = guiData_.tracerListData_.y
 
 	maxX, maxY := g.Size()

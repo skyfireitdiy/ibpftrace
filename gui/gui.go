@@ -5,44 +5,45 @@ import (
 )
 
 func updateData(g *gocui.Gui) {
-	switch guiData_.state {
-	case stateTracerList:
-		updateTracerListLayout(g)
-	case stateModuleList:
-		updateModuleListLayout(g)
-	case stateTips:
-		updateTipsLayout(g)
-	}
+	guiData_.viewConfig_[guiData_.state].updateFunc(g)
 	updateStatusLayout(g)
 }
 
 func refreshUI(g *gocui.Gui) error {
-	var err error
-	switch guiData_.state {
-	case stateTracerList:
-		err = refreshTracerListLayout(g)
-	case stateModuleList:
-		err = refreshModuleListLayout(g)
-	case stateTips:
-		err = refreshTipsLayout(g)
-	}
+	err := guiData_.viewConfig_[guiData_.state].refreshFunc(g)
 	if err != nil {
 		return err
 	}
 	return refreshStatusLayout(g)
 }
 
+func saveTracerListViewData() interface{} {
+	return guiData_.tracerListData_
+}
+
+func saveModuleListViewData() interface{} {
+	return guiData_.moduleListData_
+}
+
+func saveTipsViewData() interface{} {
+	return guiData_.tipsData_
+}
+
+func recoverTracerListViewData(info stateInfo) {
+	guiData_.tracerListData_ = info.data.(tracerListData)
+}
+
+func recoverModuleListViewData(info stateInfo) {
+	guiData_.moduleListData_ = info.data.(moduleListData)
+}
+
+func recoverTipsViewData(info stateInfo) {
+	guiData_.tipsData_ = info.data.(tipsData)
+}
+
 func enterState(state string, g *gocui.Gui) {
 	info := stateInfo{}
-	switch guiData_.state {
-	case stateTracerList:
-		info.data = guiData_.tracerListData_
-	case stateModuleList:
-		info.data = guiData_.moduleListData_
-	case stateTips:
-		info.data = guiData_.tipsData_
-	default:
-	}
+	info.data = guiData_.viewConfig_[guiData_.state].enterSaveFunc()
 	info.state = guiData_.state
 	info.view = g.CurrentView().Name()
 	guiData_.stateStack = append(guiData_.stateStack, info)
@@ -62,14 +63,7 @@ func backState(g *gocui.Gui) {
 	}
 	info := guiData_.stateStack[len(guiData_.stateStack)-1]
 	guiData_.stateStack = guiData_.stateStack[:len(guiData_.stateStack)-1]
-	switch info.state {
-	case stateTracerList:
-		guiData_.tracerListData_ = info.data.(tracerListData)
-	case stateModuleList:
-		guiData_.moduleListData_ = info.data.(moduleListData)
-	case stateTips:
-		guiData_.tipsData_ = info.data.(tipsData)
-	}
+	guiData_.viewConfig_[info.state].backRecoverFunc(info)
 	guiData_.state = info.state
 	updateData(g)
 }

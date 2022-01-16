@@ -10,15 +10,15 @@ type KprobeData struct {
 }
 
 func (k *KprobeData) GenScript() string {
+	return k.String() + " { " + k.script + " }"
+}
+
+func (k *KprobeData) String() string {
 	filterStr := ""
 	if k.filter != "" {
 		filterStr = " /" + k.filter + "/ "
 	}
-	return "kprobe:" + k.function + ":" + strconv.Itoa(k.offset) + filterStr + " { " + k.script + " }"
-}
-
-func (k *KprobeData) String() string {
-	return k.function + ":" + strconv.Itoa(k.offset) + ":" + k.filter
+	return "kprobe:" + k.function + ":" + strconv.Itoa(k.offset) + filterStr
 }
 
 func (k *KprobeData) Script() string {

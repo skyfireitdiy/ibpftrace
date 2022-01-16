@@ -21,5 +21,7 @@ func main() {
 		log.Fatal("Environment check failed")
 	}
 
+	gui.InitGuiData()
+
 	gui.GuiLoop()
 }

@@ -1,29 +1,24 @@
 package gui
 
+import (
+	"github.com/jroimartin/gocui"
+	"go.skyfire.com/command"
+)
+
 const (
 	stateTracerList = "Module List"
 	stateModuleList = "Choose Module"
 	stateTips       = "Tips"
 )
 
-var guiData_ = guiData{
-	state: stateTracerList,
-	moduleListData_: moduleListData{
-		moduleList: []string{
-			"kprobe - kernel function start",
-			"kretprobe - kernel function return",
-			"uprobe - user-level function start",
-			"uretprobe - user-level function return",
-			"tracepoint - kernel static tracepoints",
-			"usdt - user-level static tracepoints",
-			"profile - timed sampling",
-			"interval - timed output",
-			"software - kernel software events",
-			"hardware - processor-level events",
-		},
-	},
-	tipsData_: tipsData{},
+type viewConfig struct {
+	updateFunc      func(g *gocui.Gui)
+	refreshFunc     func(g *gocui.Gui) error
+	enterSaveFunc   func() interface{}
+	backRecoverFunc func(info stateInfo)
 }
+
+var guiData_ guiData
 
 type moduleListData struct {
 	moduleList []string
@@ -71,10 +66,42 @@ type guiData struct {
 	state        string
 	chooserData_ chooserData
 
+	viewConfig_ map[string]viewConfig
+
 	moduleListData_ moduleListData
 	tipsData_       tipsData
 	tracerListData_ tracerListData
 	statusData_     statusData
 
 	stateStack []stateInfo
+}
+
+func InitGuiData() {
+	guiData_ = guiData{
+		state: stateTracerList,
+		moduleListData_: moduleListData{
+			moduleList: command.ModuleList(),
+		},
+		tipsData_: tipsData{},
+		viewConfig_: map[string]viewConfig{
+			stateTracerList: {
+				updateFunc:      updateTracerListLayout,
+				refreshFunc:     refreshTracerListLayout,
+				enterSaveFunc:   saveTracerListViewData,
+				backRecoverFunc: recoverTracerListViewData,
+			},
+			stateModuleList: {
+				updateFunc:      updateModuleListLayout,
+				refreshFunc:     refreshModuleListLayout,
+				enterSaveFunc:   saveModuleListViewData,
+				backRecoverFunc: recoverModuleListViewData,
+			},
+			stateTips: {
+				updateFunc:      updateTipsLayout,
+				refreshFunc:     refreshTipsLayout,
+				enterSaveFunc:   saveTipsViewData,
+				backRecoverFunc: recoverTipsViewData,
+			},
+		},
+	}
 }
