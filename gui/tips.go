@@ -30,6 +30,7 @@ func enterTips(g *gocui.Gui) {
 }
 
 func updateTipsContent(g *gocui.Gui) error {
+	refreshTipsLayout(g)
 	v, err := g.View("Tips")
 	if err != nil {
 		return err

@@ -80,7 +80,7 @@ func StatusString(g *gocui.Gui) string {
 			} else {
 				ret += fmt.Sprintf(" %c:%s", hk.key, hk.desc)
 			}
-			ret += "    "
+			ret += " "
 		}
 	}
 	return ret

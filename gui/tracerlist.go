@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/jroimartin/gocui"
@@ -26,14 +27,13 @@ func syncTracerListInfo(g *gocui.Gui) {
 
 func refreshTracerListLayout(g *gocui.Gui) error {
 	guiData_.tracerListData_.enterCb = func(index int) error {
-		guiData_.tracerListData_.y = index
 		return nil
 	}
 	guiData_.tracerListData_.selChangedCb = func(index int) error {
 		return nil
 	}
 	syncTracerListInfo(g)
-	if err := chooseLayout(g); err != nil {
+	if err := refreshChooseLayout(g); err != nil {
 		return err
 	}
 
@@ -66,4 +66,15 @@ func updateTracerListLayout(g *gocui.Gui) {
 	syncTracerListInfo(g)
 	updateScriptContent(g)
 	updateChooseLayout(g)
+}
+
+func editTracer(g *gocui.Gui, v *gocui.View, index int) error {
+	editItems := command.TracerEditItems(index)
+	if editItems == nil {
+		return fmt.Errorf("index error: %d", index)
+	}
+	guiData_.tracerEditorData_.items = editItems
+	guiData_.editorData_.curr = 0 // 需要将编辑器的计数清零
+	enterState(stateTracerEditor, g)
+	return nil
 }

@@ -13,8 +13,8 @@ func refreshStatusLayout(g *gocui.Gui) error {
 			return err
 		}
 		v.Wrap = false
-		updateStatusContent(g)
 	}
+	updateStatusContent(g)
 	return nil
 }
 

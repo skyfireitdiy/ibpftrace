@@ -1,9 +1,16 @@
 package command
 
+type EditItem struct {
+	Title        string
+	DefaultValue string
+	DataFunction func(data string)
+}
+
 type tracer interface {
 	GenScript() string
 	Script() string
 	String() string
+	EditItems() []EditItem
 }
 
 type module struct {
@@ -125,4 +132,18 @@ func ModuleList() []string {
 		ret = append(ret, module.desc)
 	}
 	return ret
+}
+
+func CreateTracer(index int) tracer {
+	if index >= len(moduleList) {
+		return nil
+	}
+	return moduleList[index].tracerCreator()
+}
+
+func TracerEditItems(index int) []EditItem {
+	if index >= len(tracerList) {
+		return nil
+	}
+	return tracerList[index].EditItems()
 }

@@ -1,10 +1,10 @@
 package gui
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/jroimartin/gocui"
+	"go.skyfire.com/command"
 )
 
 func syncModuleListInfo(g *gocui.Gui) {
@@ -27,15 +27,16 @@ func syncModuleListInfo(g *gocui.Gui) {
 func refreshModuleListLayout(g *gocui.Gui) error {
 	guiData_.moduleListData_.enterCb = func(index int) error {
 		guiData_.moduleListData_.y = index
-		setTips("Tips", fmt.Sprintf("Module %s not implemented yet.", guiData_.moduleListData_.moduleList[index]))
-		convertTips(g)
+		tracer := command.CreateTracer(index)
+		command.AddTracer(tracer)
+		backState(g)
 		return nil
 	}
 	guiData_.moduleListData_.escCb = func(index int) error {
 		return nil
 	}
 	syncModuleListInfo(g)
-	return chooseLayout(g)
+	return refreshChooseLayout(g)
 }
 
 func updateModuleListLayout(g *gocui.Gui) {

@@ -20,7 +20,7 @@ func selectItem(g *gocui.Gui, v *gocui.View, convert func(y, total int) int) err
 	return nil
 }
 
-func chooseLayout(g *gocui.Gui) error {
+func refreshChooseLayout(g *gocui.Gui) error {
 	if v, err := g.SetView("Choose", guiData_.chooserData_.x0, guiData_.chooserData_.y0, guiData_.chooserData_.x1, guiData_.chooserData_.y1); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -32,13 +32,13 @@ func chooseLayout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorWhite
 		v.SelBgColor = gocui.ColorGreen
 		v.Highlight = true
-
 		updateChooseContent(g)
 	}
 	return nil
 }
 
 func updateChooseContent(g *gocui.Gui) error {
+	refreshChooseLayout(g)
 	v, err := g.View("Choose")
 	if err != nil {
 		return err

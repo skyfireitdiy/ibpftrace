@@ -6,9 +6,10 @@ import (
 )
 
 const (
-	stateTracerList = "Module List"
-	stateModuleList = "Choose Module"
-	stateTips       = "Tips"
+	stateTracerList   = "Module List"
+	stateModuleList   = "Choose Module"
+	stateTips         = "Tips"
+	stateTracerEditor = "Tracer Editor"
 )
 
 type viewConfig struct {
@@ -38,8 +39,13 @@ type tracerListData struct {
 	y            int
 }
 
-type statusData struct {
-	content string
+type editorData struct {
+	items []command.EditItem
+	curr  int
+}
+
+type tracerEditorViewData struct {
+	items []command.EditItem
 }
 
 type stateInfo struct {
@@ -74,10 +80,11 @@ type guiData struct {
 
 	viewConfig_ map[string]viewConfig
 
-	moduleListData_ moduleListData
-	tipsData_       tipsData
-	tracerListData_ tracerListData
-	statusData_     statusData
+	moduleListData_   moduleListData
+	tipsData_         tipsData
+	tracerListData_   tracerListData
+	editorData_       editorData
+	tracerEditorData_ tracerEditorViewData
 
 	stateStack []stateInfo
 	hotkey_    []hotkey
@@ -109,6 +116,12 @@ func InitGuiData() {
 				enterSaveFunc:   saveTipsViewData,
 				backRecoverFunc: recoverTipsViewData,
 			},
+			stateTracerEditor: {
+				updateFunc:      updateTracerEditorLayout,
+				refreshFunc:     refreshTracerEditorLayout,
+				enterSaveFunc:   saveTracerEditorViewData,
+				backRecoverFunc: recoverTracerEditorViewData,
+			},
 		},
 		hotkey_: []hotkey{
 			{
@@ -119,10 +132,16 @@ func InitGuiData() {
 				handler:       quit,
 			},
 			{
-				key:     'q',
-				desc:    "Quit",
-				mod:     gocui.ModNone,
-				handler: quit,
+				key:  'q',
+				desc: "Quit",
+				mod:  gocui.ModNone,
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					if v.Name() == "Editor" {
+						v.EditWrite('q')
+						return nil
+					}
+					return quit(g, v)
+				},
 			},
 			{
 				view:          "Choose",
@@ -207,6 +226,29 @@ func InitGuiData() {
 				handler: func(g *gocui.Gui, v *gocui.View) error {
 					enterState(stateModuleList, g)
 					return nil
+				},
+			},
+			{
+				view:  "Choose",
+				desc:  "Edit Tracer",
+				key:   'e',
+				mod:   gocui.ModNone,
+				state: stateTracerList,
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					_, y := v.Cursor()
+					guiData_.tracerListData_.y = y
+					return editTracer(g, v, y)
+				},
+			},
+			{
+				view:          "Editor",
+				desc:          "Save",
+				key:           gocui.KeyCtrlS,
+				mod:           gocui.ModNone,
+				keyDisplayStr: "Ctrl+S",
+				state:         stateTracerEditor,
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					return handleSave(g, v)
 				},
 			},
 		},
