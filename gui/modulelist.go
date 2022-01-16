@@ -11,7 +11,6 @@ func syncModuleListInfo(g *gocui.Gui) {
 	guiData_.chooserData_.escCb = guiData_.moduleListData_.escCb
 	guiData_.chooserData_.enterCb = guiData_.moduleListData_.enterCb
 	guiData_.chooserData_.selChangedCb = nil
-	guiData_.chooserData_.status = guiData_.moduleListData_.status
 
 	guiData_.chooserData_.title = stateTracerList
 	guiData_.chooserData_.data = strings.Join(guiData_.moduleListData_.moduleList, "\n")
@@ -23,7 +22,6 @@ func syncModuleListInfo(g *gocui.Gui) {
 	guiData_.chooserData_.x1 = maxX - 1
 	guiData_.chooserData_.y1 = maxY - 5
 
-	guiData_.statusData_.content = guiData_.moduleListData_.status
 }
 
 func refreshModuleListLayout(g *gocui.Gui) error {
@@ -36,7 +34,6 @@ func refreshModuleListLayout(g *gocui.Gui) error {
 	guiData_.moduleListData_.escCb = func(index int) error {
 		return nil
 	}
-	guiData_.moduleListData_.status = "Choose Module"
 	syncModuleListInfo(g)
 	return chooseLayout(g)
 }

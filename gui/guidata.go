@@ -25,20 +25,17 @@ type moduleListData struct {
 	enterCb    func(index int) error
 	escCb      func(index int) error
 	y          int
-	status     string
 }
 
 type tipsData struct {
 	title   string
 	content string
-	status  string
 }
 
 type tracerListData struct {
 	enterCb      func(index int) error
 	selChangedCb func(index int) error
 	y            int
-	status       string
 }
 
 type statusData struct {
@@ -59,7 +56,16 @@ type chooserData struct {
 	data           interface{}
 	x0, y0, x1, y1 int
 	y              int
-	status         string
+}
+
+type hotkey struct {
+	view          string
+	desc          string
+	key           interface{}
+	keyDisplayStr string
+	state         string
+	mod           gocui.Modifier
+	handler       func(g *gocui.Gui, v *gocui.View) error
 }
 
 type guiData struct {
@@ -74,6 +80,7 @@ type guiData struct {
 	statusData_     statusData
 
 	stateStack []stateInfo
+	hotkey_    []hotkey
 }
 
 func InitGuiData() {
@@ -101,6 +108,106 @@ func InitGuiData() {
 				refreshFunc:     refreshTipsLayout,
 				enterSaveFunc:   saveTipsViewData,
 				backRecoverFunc: recoverTipsViewData,
+			},
+		},
+		hotkey_: []hotkey{
+			{
+				key:           gocui.KeyCtrlC,
+				desc:          "Quit",
+				keyDisplayStr: "Ctrl+C",
+				mod:           gocui.ModNone,
+				handler:       quit,
+			},
+			{
+				key:     'q',
+				desc:    "Quit",
+				mod:     gocui.ModNone,
+				handler: quit,
+			},
+			{
+				view:          "Choose",
+				desc:          "Down",
+				keyDisplayStr: "↓",
+				key:           gocui.KeyArrowDown,
+				mod:           gocui.ModNone,
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					return selectItem(g, v, func(y, total int) int {
+						return (y + 1) % total
+					})
+				},
+			},
+			{
+				view:          "Choose",
+				desc:          "Up",
+				keyDisplayStr: "↑",
+				key:           gocui.KeyArrowUp,
+				mod:           gocui.ModNone,
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					return selectItem(g, v, func(y, total int) int {
+						return (y + total - 1) % total
+					})
+				},
+			},
+			{
+				view:          "Choose",
+				desc:          "Choose",
+				key:           gocui.KeyEnter,
+				mod:           gocui.ModNone,
+				keyDisplayStr: "Enter",
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					_, index := v.Cursor()
+					if guiData_.chooserData_.enterCb != nil {
+						return guiData_.chooserData_.enterCb(index)
+					}
+					return nil
+				},
+			},
+			{
+				view:          "Choose",
+				desc:          "Back",
+				key:           gocui.KeyEsc,
+				mod:           gocui.ModNone,
+				keyDisplayStr: "Esc",
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					_, index := v.Cursor()
+					if guiData_.chooserData_.escCb != nil {
+						return guiData_.chooserData_.escCb(index)
+					}
+					return nil
+				},
+			},
+			{
+				view:          "Tips",
+				desc:          "Back",
+				key:           gocui.KeyEnter,
+				mod:           gocui.ModNone,
+				keyDisplayStr: "Enter",
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					backState(g)
+					return nil
+				},
+			},
+			{
+				view:          "Tips",
+				desc:          "Back",
+				key:           gocui.KeyEsc,
+				mod:           gocui.ModNone,
+				keyDisplayStr: "Esc",
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					backState(g)
+					return nil
+				},
+			},
+			{
+				view:  "Choose",
+				desc:  "Add Tracer",
+				key:   'a',
+				mod:   gocui.ModNone,
+				state: stateTracerList,
+				handler: func(g *gocui.Gui, v *gocui.View) error {
+					enterState(stateModuleList, g)
+					return nil
+				},
 			},
 		},
 	}

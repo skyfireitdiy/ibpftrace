@@ -25,7 +25,7 @@ func updateStatusContent(g *gocui.Gui) error {
 	}
 	v.Clear()
 	v.SetCursor(0, 0)
-	fmt.Fprintln(v, guiData_.statusData_.content)
+	fmt.Fprintln(v, StatusString(g))
 	return nil
 }
 

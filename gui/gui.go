@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"fmt"
+
 	"github.com/jroimartin/gocui"
 )
 
@@ -66,4 +68,20 @@ func backState(g *gocui.Gui) {
 	guiData_.viewConfig_[info.state].backRecoverFunc(info)
 	guiData_.state = info.state
 	updateData(g)
+}
+
+func StatusString(g *gocui.Gui) string {
+	ret := guiData_.state
+	vName := g.CurrentView().Name()
+	for _, hk := range guiData_.hotkey_ {
+		if (hk.state == guiData_.state || hk.state == "") && (hk.view == vName || hk.view == "") {
+			if hk.keyDisplayStr != "" {
+				ret += " " + hk.keyDisplayStr + ":" + hk.desc
+			} else {
+				ret += fmt.Sprintf(" %c:%s", hk.key, hk.desc)
+			}
+			ret += "    "
+		}
+	}
+	return ret
 }
